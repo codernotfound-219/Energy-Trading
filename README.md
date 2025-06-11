@@ -42,9 +42,11 @@ Before running this application, make sure you have:
 
 3. **Start local blockchain**
    ```bash
-   npm run node
+   npx hardhat node --port 8546
    ```
-   This will start a local Hardhat network on `http://localhost:8545`
+   This will start a local Hardhat network on `http://localhost:8546`
+   
+   ⚠️ **Important**: Keep this terminal running - the blockchain node must stay active for the application to work.
 
 4. **Deploy smart contracts** (in a new terminal)
    ```bash
@@ -52,12 +54,18 @@ Before running this application, make sure you have:
    npm run deploy
    ```
 
-5. **Start the frontend**
+5. **Run the demo** (optional but recommended)
+   ```bash
+   npm run demo
+   ```
+   This demonstrates the smart contract functionality with sample transactions.
+
+6. **Start the frontend**
    ```bash
    npm run dev
    ```
 
-6. **Access the application**
+7. **Access the application**
    Open your browser and go to `http://localhost:3000`
 
 ## Smart Contract
@@ -84,12 +92,34 @@ The `EnergyTrading.sol` contract provides the following functionality:
 
 1. **Install MetaMask**: Download and install the MetaMask browser extension
 2. **Connect to Local Network**:
-   - Network Name: Localhost 8545
-   - RPC URL: http://localhost:8545
+   - Network Name: Localhost 8546
+   - RPC URL: http://localhost:8546
    - Chain ID: 1337
    - Currency Symbol: ETH
 
-3. **Import Test Accounts**: Use the private keys provided by Hardhat when you run `npm run node`
+3. **Import Test Accounts**: Use the private keys provided by Hardhat when you run the blockchain node
+
+## Quick Start Demo
+
+After installation, you can run a demonstration of the smart contract functionality:
+
+```bash
+# Terminal 1: Start blockchain
+npx hardhat node --port 8546
+
+# Terminal 2: Deploy and run demo
+npm run deploy
+npm run demo
+```
+
+The demo will:
+- Deploy the EnergyTrading smart contract
+- Create sample energy listings
+- Simulate energy purchases
+- Show marketplace activity
+- Display transaction results
+
+This proves the smart contract works before testing with the frontend!
 
 ## Usage
 
@@ -111,13 +141,24 @@ The `EnergyTrading.sol` contract provides the following functionality:
 
 ## Development Scripts
 
-- `npm run dev`: Start development server
-- `npm run build`: Build for production
+- `npm run dev`: Start frontend development server
+- `npm run build`: Build frontend for production
 - `npm run preview`: Preview production build
 - `npm run compile`: Compile smart contracts
 - `npm run test`: Run smart contract tests
 - `npm run deploy`: Deploy contracts to local network
-- `npm run node`: Start local Hardhat network
+- `npm run demo`: Run smart contract demonstration
+- `npx hardhat node --port 8546`: Start local Hardhat network
+
+### Typical Development Workflow
+
+1. **Start blockchain**: `npx hardhat node --port 8546` (keep running)
+2. **Deploy contracts**: `npm run deploy`
+3. **Test contracts**: `npm run demo` (optional)
+4. **Start frontend**: `npm run dev`
+5. **Connect MetaMask** to localhost:8546
+6. **Import test accounts** from Hardhat output
+7. **Start trading energy!**
 
 ## Project Structure
 
@@ -153,12 +194,13 @@ Energy-Trading/
 
 1. **MetaMask Connection Issues**
    - Make sure MetaMask is installed and unlocked
-   - Check that you're connected to the correct network (localhost:8545)
+   - Check that you're connected to the correct network (localhost:8546)
    - Refresh the page and try reconnecting
 
 2. **Contract Not Found**
    - Ensure the smart contract is deployed (`npm run deploy`)
    - Check that the contract address in `src/contract.json` is correct
+   - Verify the blockchain node is running on port 8546
 
 3. **Transaction Failures**
    - Make sure you have sufficient ETH for gas fees
@@ -168,3 +210,33 @@ Energy-Trading/
 4. **Build Issues**
    - Clear node_modules and reinstall: `rm -rf node_modules package-lock.json && npm install`
    - Make sure you have the correct Node.js version
+
+5. **Demo Script Issues**
+   - Ensure blockchain node is running: `npx hardhat node --port 8546`
+   - Redeploy contract if blockchain restarted: `npm run deploy`
+   - Check terminal output for error messages
+
+6. **Port Already in Use**
+   - If port 8546 is busy, kill the process: `lsof -ti:8546 | xargs kill -9`
+   - Or use a different port and update `hardhat.config.js`
+
+### Reset Everything
+
+If you encounter persistent issues:
+
+```bash
+# Stop all processes
+pkill -f hardhat
+
+# Clean build artifacts
+rm -rf artifacts cache src/contract.json
+
+# Restart blockchain
+npx hardhat node --port 8546
+
+# Redeploy (in new terminal)
+npm run deploy
+
+# Test with demo
+npm run demo
+```
