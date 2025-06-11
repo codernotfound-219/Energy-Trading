@@ -1,0 +1,33 @@
+{
+  "name": "p2p-energy-trading",
+  "version": "1.0.0",
+  "description": "Peer-to-Peer Energy Trading Platform using Smart Contracts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "node": "hardhat node",
+    "demo": "hardhat run scripts/demo.js --network localhost"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "ethers": "^6.8.0",
+    "web3": "^4.2.0",
+    "react-router-dom": "^6.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^4.4.5",
+    "hardhat": "^2.17.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "tailwindcss": "^3.3.3",
+    "autoprefixer": "^10.4.15",
+    "postcss": "^8.4.29"
+  }
+}
