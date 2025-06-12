@@ -18,24 +18,33 @@ export const Web3Provider = ({ children }) => {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load contract data
   const loadContract = async (signerInstance) => {
     try {
-      const response = await fetch('/src/contract.json');
+      console.log('Loading contract...');
+      const response = await fetch('/contract.json');
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch contract.json: ${response.status} ${response.statusText}`);
+      }
+      
       const contractData = await response.json();
+      console.log('Contract data loaded:', contractData.address);
       
       const contractInstance = new ethers.Contract(
         contractData.address,
-        JSON.parse(contractData.abi),
+        contractData.abi,
         signerInstance
       );
       
+      console.log('Contract instance created successfully');
       setContract(contractInstance);
       return contractInstance;
     } catch (err) {
       console.error('Error loading contract:', err);
-      setError('Failed to load contract. Make sure it is deployed.');
+      setError(`Failed to load contract: ${err.message}. Make sure it is deployed and the blockchain is running.`);
       return null;
     }
   };
@@ -50,6 +59,7 @@ export const Web3Provider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Connecting to wallet...');
 
       // Request account access
       const accounts = await window.ethereum.request({
@@ -60,16 +70,34 @@ export const Web3Provider = ({ children }) => {
         throw new Error('No accounts found');
       }
 
+      console.log('Connected to account:', accounts[0]);
+
       // Create provider and signer
       const providerInstance = new ethers.BrowserProvider(window.ethereum);
       const signerInstance = await providerInstance.getSigner();
+
+      console.log('Provider and signer created');
+
+      // Check network
+      const network = await providerInstance.getNetwork();
+      console.log('Connected to network:', network.chainId.toString());
+
+      if (network.chainId !== 1337n) {
+        setError('Please switch to the local network (Chain ID: 1337) in MetaMask');
+        return;
+      }
 
       setProvider(providerInstance);
       setSigner(signerInstance);
       setAccount(accounts[0]);
 
       // Load contract
-      await loadContract(signerInstance);
+      const contractInstance = await loadContract(signerInstance);
+      if (!contractInstance) {
+        throw new Error('Failed to load contract');
+      }
+
+      console.log('Wallet connected successfully');
 
     } catch (err) {
       console.error('Error connecting wallet:', err);
@@ -93,12 +121,25 @@ export const Web3Provider = ({ children }) => {
     const checkConnection = async () => {
       if (window.ethereum) {
         try {
+          console.log('Checking existing connection...');
           const accounts = await window.ethereum.request({
             method: 'eth_accounts',
           });
 
           if (accounts.length > 0) {
+            console.log('Found existing connection:', accounts[0]);
             const providerInstance = new ethers.BrowserProvider(window.ethereum);
+            
+            // Check network
+            const network = await providerInstance.getNetwork();
+            console.log('Current network:', network.chainId.toString());
+            
+            if (network.chainId !== 1337n) {
+              setError('Please switch to the local network (Chain ID: 1337) in MetaMask');
+              setIsInitialized(true);
+              return;
+            }
+            
             const signerInstance = await providerInstance.getSigner();
 
             setProvider(providerInstance);
@@ -106,11 +147,15 @@ export const Web3Provider = ({ children }) => {
             setAccount(accounts[0]);
 
             await loadContract(signerInstance);
+          } else {
+            console.log('No existing connection found');
           }
         } catch (err) {
           console.error('Error checking connection:', err);
+          setError(`Connection check failed: ${err.message}`);
         }
       }
+      setIsInitialized(true);
     };
 
     checkConnection();
@@ -145,9 +190,22 @@ export const Web3Provider = ({ children }) => {
     contract,
     loading,
     error,
+    isInitialized,
     connectWallet,
     disconnectWallet,
   };
+
+  // Don't render children until Web3 context is initialized
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <p className="mt-2 text-gray-600">Initializing Web3...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Web3Context.Provider value={value}>

@@ -15,8 +15,27 @@ const Home = () => {
       setLoading(true);
       setError(null);
       
+      console.log('Loading active listings...');
       const activeListings = await contract.getActiveListings();
-      setListings(activeListings);
+      console.log('Raw listings:', activeListings);
+      
+      // Convert the listings to a more usable format
+      const formattedListings = activeListings.map((listing, index) => {
+        console.log(`Processing listing ${index}:`, listing);
+        return {
+          id: listing[0] || listing.id,
+          seller: listing[1] || listing.seller,
+          energyAmount: listing[2] || listing.energyAmount,
+          pricePerKWh: listing[3] || listing.pricePerKWh,
+          totalPrice: listing[4] || listing.totalPrice,
+          isActive: listing[5] !== undefined ? listing[5] : listing.isActive,
+          isSold: listing[6] !== undefined ? listing[6] : listing.isSold,
+          timestamp: listing[7] || listing.timestamp
+        };
+      });
+      
+      console.log('Formatted listings:', formattedListings);
+      setListings(formattedListings || []);
     } catch (err) {
       console.error('Error loading listings:', err);
       setError('Failed to load energy listings');
@@ -26,7 +45,9 @@ const Home = () => {
   };
 
   useEffect(() => {
-    loadListings();
+    if (contract) {
+      loadListings();
+    }
   }, [contract]);
 
   if (!account) {

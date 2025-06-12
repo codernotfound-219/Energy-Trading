@@ -6,14 +6,21 @@ const EnergyCard = ({ listing, onPurchaseSuccess }) => {
   const { contract, account } = useWeb3();
   const [purchasing, setPurchasing] = useState(false);
 
+  if (!listing) {
+    return null;
+  }
+
   const handlePurchase = async () => {
     if (!contract || !account) return;
 
     try {
       setPurchasing(true);
       
-      const tx = await contract.purchaseEnergy(listing.id, {
-        value: listing.totalPrice
+      const listingId = listing.id || listing[0];
+      const totalPrice = listing.totalPrice || listing[4];
+      
+      const tx = await contract.purchaseEnergy(listingId, {
+        value: totalPrice
       });
       
       await tx.wait();
@@ -31,24 +38,44 @@ const EnergyCard = ({ listing, onPurchaseSuccess }) => {
   };
 
   const formatPrice = (priceInWei) => {
-    return ethers.formatEther(priceInWei);
+    try {
+      if (!priceInWei) return '0';
+      return ethers.formatEther(priceInWei);
+    } catch (err) {
+      console.error('Error formatting price:', err);
+      return '0';
+    }
   };
 
   const formatDate = (timestamp) => {
-    return new Date(Number(timestamp) * 1000).toLocaleDateString();
+    try {
+      if (!timestamp) return 'Unknown';
+      const date = new Date(Number(timestamp) * 1000);
+      return date.toLocaleDateString();
+    } catch (err) {
+      console.error('Error formatting date:', err);
+      return 'Unknown';
+    }
   };
 
-  const isOwnListing = listing.seller.toLowerCase() === account?.toLowerCase();
+  // Extract values with fallbacks for both array and object formats
+  const energyAmount = listing.energyAmount || listing[2] || 0;
+  const pricePerKWh = listing.pricePerKWh || listing[3] || 0;
+  const totalPrice = listing.totalPrice || listing[4] || 0;
+  const seller = listing.seller || listing[1] || '';
+  const timestamp = listing.timestamp || listing[7] || 0;
+
+  const isOwnListing = seller && account && seller.toLowerCase() === account.toLowerCase();
 
   return (
     <div className="card hover:shadow-lg transition-shadow duration-200">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
-            {listing.energyAmount.toString()} kWh
+            {energyAmount.toString()} kWh
           </h3>
           <p className="text-sm text-gray-600">
-            Listed on {formatDate(listing.timestamp)}
+            Listed on {formatDate(timestamp)}
           </p>
         </div>
         <div className="bg-energy-green text-white px-2 py-1 rounded text-sm">
@@ -59,18 +86,18 @@ const EnergyCard = ({ listing, onPurchaseSuccess }) => {
       <div className="space-y-3 mb-6">
         <div className="flex justify-between">
           <span className="text-gray-600">Price per kWh:</span>
-          <span className="font-medium">{formatPrice(listing.pricePerKWh)} ETH</span>
+          <span className="font-medium">{formatPrice(pricePerKWh)} ETH</span>
         </div>
         
         <div className="flex justify-between">
           <span className="text-gray-600">Total Price:</span>
-          <span className="font-bold text-lg">{formatPrice(listing.totalPrice)} ETH</span>
+          <span className="font-bold text-lg">{formatPrice(totalPrice)} ETH</span>
         </div>
         
         <div className="flex justify-between">
           <span className="text-gray-600">Seller:</span>
           <span className="font-mono text-sm">
-            {listing.seller.slice(0, 6)}...{listing.seller.slice(-4)}
+            {seller ? `${seller.slice(0, 6)}...${seller.slice(-4)}` : 'Unknown'}
           </span>
         </div>
       </div>

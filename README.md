@@ -216,9 +216,17 @@ Energy-Trading/
    - Redeploy contract if blockchain restarted: `npm run deploy`
    - Check terminal output for error messages
 
-6. **Port Already in Use**
-   - If port 8546 is busy, kill the process: `lsof -ti:8546 | xargs kill -9`
-   - Or use a different port and update `hardhat.config.js`
+6. **Content Security Policy (CSP) Issues**
+   - The app is configured with proper CSP headers for development
+   - If you still see CSP errors about 'eval', they're usually from browser extensions
+   - These warnings don't affect functionality in development mode
+   - Try disabling browser extensions or use incognito mode if needed
+   - The app will automatically handle CSP in both development and production
+
+7. **Port Already in Use**
+   - If port 3000 is busy, Vite will automatically use another port (like 3001)
+   - Update your browser URL accordingly
+   - Or kill the process: `lsof -ti:3000 | xargs kill -9`
 
 ### Reset Everything
 

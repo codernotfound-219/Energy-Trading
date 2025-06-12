@@ -18,7 +18,7 @@ async function main() {
   const fs = require('fs');
   const contractData = {
     address: contractAddress,
-    abi: energyTrading.interface.format('json')
+    abi: energyTrading.interface.fragments.map(fragment => fragment.format('json')).map(f => JSON.parse(f))
   };
 
   // Create src directory if it doesn't exist
@@ -26,12 +26,23 @@ async function main() {
     fs.mkdirSync('./src');
   }
 
+  // Create public directory if it doesn't exist
+  if (!fs.existsSync('./public')) {
+    fs.mkdirSync('./public');
+  }
+
+  // Save to both src and public directories
   fs.writeFileSync(
     './src/contract.json',
     JSON.stringify(contractData, null, 2)
   );
 
-  console.log("Contract address and ABI saved to src/contract.json");
+  fs.writeFileSync(
+    './public/contract.json',
+    JSON.stringify(contractData, null, 2)
+  );
+
+  console.log("Contract address and ABI saved to src/contract.json and public/contract.json");
 }
 
 main()

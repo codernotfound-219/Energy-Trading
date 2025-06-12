@@ -86,7 +86,7 @@ async function main() {
   console.log("1. Start the local blockchain: npm run node");
   console.log("2. Deploy contracts: npm run deploy");
   console.log("3. Start the frontend: npm run dev");
-  console.log("4. Connect MetaMask to http://localhost:8545");
+  console.log("4. Connect MetaMask to http://localhost:8546");
   console.log("5. Import test accounts using private keys from Hardhat");
 }
 
