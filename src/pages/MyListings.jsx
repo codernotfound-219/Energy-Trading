@@ -47,22 +47,51 @@ const MyListings = () => {
           
           for (let j = 0; j < userOfferIds.length; j++) {
             const offerId = userOfferIds[j];
-            const offerDetails = await contract.getOfferDetails(offerId);
-            
-            // Find the bus name
-            const bus = busesData.find(b => b.id === i);
-            
-            allOffers.push({
-              id: offerId,
-              busId: offerDetails[0],
-              busName: bus ? bus.name : `Bus ${i}`,
-              seller: offerDetails[1],
-              energyAmount: offerDetails[2],
-              pricePerUnit: offerDetails[3],
-              isActive: offerDetails[4],
-              lockExpiry: offerDetails[5],
-              totalPrice: offerDetails[2] * offerDetails[3] // energyAmount * pricePerUnit
-            });
+            try {
+              const offerDetails = await contract.getOfferDetails(offerId);
+              console.log(`Offer ${offerId} details:`, {
+                busId: offerDetails[0]?.toString(),
+                seller: offerDetails[1],
+                energyAmount: offerDetails[2]?.toString(),
+                pricePerUnit: offerDetails[3]?.toString(),
+                isActive: offerDetails[4],
+                lockExpiry: offerDetails[5]?.toString()
+              });
+              
+              // Find the bus name
+              const bus = busesData.find(b => b.id === i);
+              
+              // Safely calculate total price
+              let totalPrice = 0;
+              try {
+                const energyAmount = offerDetails[2];
+                const pricePerUnit = offerDetails[3];
+                
+                // Convert to BigNumber if needed and multiply
+                if (energyAmount && pricePerUnit) {
+                  const energyBN = ethers.toBigInt(energyAmount.toString());
+                  const priceBN = ethers.toBigInt(pricePerUnit.toString());
+                  totalPrice = energyBN * priceBN;
+                }
+              } catch (error) {
+                console.error("Error calculating total price:", error);
+                totalPrice = 0;
+              }
+              
+              allOffers.push({
+                id: offerId,
+                busId: offerDetails[0],
+                busName: bus ? bus.name : `Bus ${i}`,
+                seller: offerDetails[1],
+                energyAmount: offerDetails[2],
+                pricePerUnit: offerDetails[3],
+                isActive: offerDetails[4],
+                lockExpiry: offerDetails[5],
+                totalPrice: totalPrice
+              });
+            } catch (offerError) {
+              console.error(`Error loading offer ${offerId}:`, offerError);
+            }
           }
         } catch (err) {
           console.error(`Error loading offers for bus ${i}:`, err);
@@ -89,7 +118,25 @@ const MyListings = () => {
   }, [contract, account]);
 
   const formatPrice = (priceInWei) => {
-    return ethers.formatEther(priceInWei);
+    try {
+      // Handle null, undefined, empty string, or 0
+      if (!priceInWei || priceInWei === "" || priceInWei === "0") {
+        return "0";
+      }
+      
+      // Convert to string if it's a BigNumber
+      const priceStr = priceInWei.toString();
+      
+      // Check if it's a valid number
+      if (priceStr === "0" || priceStr === "") {
+        return "0";
+      }
+      
+      return ethers.formatEther(priceStr);
+    } catch (error) {
+      console.error("Error formatting price:", error, "Value:", priceInWei);
+      return "0";
+    }
   };
 
   const formatDate = (timestamp) => {
