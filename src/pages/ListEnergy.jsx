@@ -81,8 +81,8 @@ const ListEnergy = () => {
 
     const { name, owners, capacity, basePrice } = busFormData;
     
-    if (!name || !owners || !capacity || !basePrice) {
-      alert('Please fill in all fields');
+    if (!name || !capacity || !basePrice) {
+      alert('Please fill in all required fields (name, capacity, and base price)');
       return;
     }
 
@@ -94,8 +94,11 @@ const ListEnergy = () => {
     try {
       setCreatingBus(true);
       
-      // Parse owners - split by comma and trim whitespace
-      const ownerAddresses = owners.split(',').map(addr => addr.trim());
+      // Parse owners - split by comma and trim whitespace, filter out empty strings
+      let ownerAddresses = [];
+      if (owners.trim()) {
+        ownerAddresses = owners.split(',').map(addr => addr.trim()).filter(addr => addr !== '');
+      }
       
       // Add current account if not already in list
       if (!ownerAddresses.includes(account)) {
@@ -227,7 +230,7 @@ const ListEnergy = () => {
 
             <div>
               <label htmlFor="owners" className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Owners (comma-separated addresses)
+                Additional Owners <span className="text-gray-500 font-normal">(optional)</span>
               </label>
               <input
                 type="text"
@@ -235,7 +238,7 @@ const ListEnergy = () => {
                 name="owners"
                 value={busFormData.owners}
                 onChange={handleBusInputChange}
-                placeholder="0x123..., 0x456... (optional)"
+                placeholder="0x123..., 0x456... (leave empty to be sole owner)"
                 className="input-field"
               />
               <p className="text-sm text-gray-500 mt-1">
