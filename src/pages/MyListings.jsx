@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 const MyListings = () => {
   const { contract, account } = useWeb3();
   const [listings, setListings] = useState([]);
+  const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -15,11 +16,60 @@ const MyListings = () => {
       setLoading(true);
       setError(null);
       
-      const userListingIds = await contract.getUserListings(account);
-      const listingPromises = userListingIds.map(id => contract.listings(id));
-      const userListings = await Promise.all(listingPromises);
+      // Get all buses to have bus information
+      const busCount = await contract.getBusCount();
+      const busesData = [];
       
-      setListings(userListings);
+      for (let i = 1; i <= busCount; i++) {
+        try {
+          const busDetails = await contract.getBusDetails(i);
+          busesData.push({
+            id: i,
+            name: busDetails[0],
+            owners: busDetails[1],
+            totalCapacity: busDetails[2],
+            availableCapacity: busDetails[3],
+            basePrice: busDetails[4],
+            isActive: busDetails[5]
+          });
+        } catch (err) {
+          console.error(`Error loading bus ${i}:`, err);
+        }
+      }
+      setBuses(busesData);
+      
+      // Get all user's offers across all buses
+      const allOffers = [];
+      
+      for (let i = 1; i <= busCount; i++) {
+        try {
+          const userOfferIds = await contract.getUserBusOffers(i, account);
+          
+          for (let j = 0; j < userOfferIds.length; j++) {
+            const offerId = userOfferIds[j];
+            const offerDetails = await contract.getOfferDetails(offerId);
+            
+            // Find the bus name
+            const bus = busesData.find(b => b.id === i);
+            
+            allOffers.push({
+              id: offerId,
+              busId: offerDetails[0],
+              busName: bus ? bus.name : `Bus ${i}`,
+              seller: offerDetails[1],
+              energyAmount: offerDetails[2],
+              pricePerUnit: offerDetails[3],
+              isActive: offerDetails[4],
+              lockExpiry: offerDetails[5],
+              totalPrice: offerDetails[2] * offerDetails[3] // energyAmount * pricePerUnit
+            });
+          }
+        } catch (err) {
+          console.error(`Error loading offers for bus ${i}:`, err);
+        }
+      }
+      
+      setListings(allOffers);
     } catch (err) {
       console.error('Error loading listings:', err);
       setError('Failed to load your listings');
@@ -29,18 +79,9 @@ const MyListings = () => {
   };
 
   const cancelListing = async (listingId) => {
-    if (!contract) return;
-
-    try {
-      const tx = await contract.cancelListing(listingId);
-      await tx.wait();
-      
-      alert('Listing cancelled successfully!');
-      loadMyListings(); // Reload listings
-    } catch (err) {
-      console.error('Error cancelling listing:', err);
-      alert('Failed to cancel listing. Please try again.');
-    }
+    // Note: The MultiBus contract doesn't have a cancel function
+    // Offers are automatically managed by the contract
+    alert('Manual cancellation is not available in the MultiBus contract. Offers are automatically managed based on capacity and purchases.');
   };
 
   useEffect(() => {
@@ -56,12 +97,12 @@ const MyListings = () => {
   };
 
   const getStatusBadge = (listing) => {
-    if (listing.isSold) {
-      return <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Sold</span>;
+    if (listing.lockExpiry > Date.now() / 1000) {
+      return <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">Locked</span>;
     } else if (listing.isActive) {
       return <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Active</span>;
     } else {
-      return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm">Cancelled</span>;
+      return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm">Inactive</span>;
     }
   };
 
@@ -114,10 +155,13 @@ const MyListings = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {listing.energyAmount.toString()} kWh
+                    {listing.energyAmount.toString()} Wh
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Listed on {formatDate(listing.timestamp)}
+                    Energy Bus: {listing.busName}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Offer ID: #{listing.id.toString()}
                   </p>
                 </div>
                 {getStatusBadge(listing)}
@@ -125,33 +169,54 @@ const MyListings = () => {
 
               <div className="grid md:grid-cols-3 gap-4 mb-6">
                 <div>
-                  <span className="text-gray-600 block text-sm">Price per kWh</span>
-                  <span className="font-medium">{formatPrice(listing.pricePerKWh)} ETH</span>
+                  <span className="text-gray-600 block text-sm">Price per Wh</span>
+                  <span className="font-medium">{formatPrice(listing.pricePerUnit)} ETH</span>
                 </div>
                 
                 <div>
-                  <span className="text-gray-600 block text-sm">Total Price</span>
+                  <span className="text-gray-600 block text-sm">Total Value</span>
                   <span className="font-bold">{formatPrice(listing.totalPrice)} ETH</span>
                 </div>
                 
                 <div>
-                  <span className="text-gray-600 block text-sm">Listing ID</span>
-                  <span className="font-mono text-sm">#{listing.id.toString()}</span>
+                  <span className="text-gray-600 block text-sm">Energy Amount</span>
+                  <span className="font-medium">{listing.energyAmount.toString()} Wh</span>
                 </div>
               </div>
 
-              {listing.isActive && !listing.isSold && (
-                <div className="flex space-x-4">
-                  <button
-                    onClick={() => cancelListing(listing.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-                  >
-                    Cancel Listing
-                  </button>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Bus ID:</span>
+                    <span className="ml-2 font-mono">#{listing.busId.toString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Status:</span>
+                    <span className="ml-2">{listing.isActive ? 'Active' : 'Inactive'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {listing.lockExpiry > Date.now() / 1000 && (
+                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800">
+                    🔒 This offer is temporarily locked due to an active transaction.
+                  </p>
                 </div>
               )}
             </div>
           ))}
+          
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 className="font-medium text-blue-900 mb-2">💡 About Your Energy Offers</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Offers are automatically managed by the MultiBus contract</li>
+              <li>• Energy is measured in Watt-hours (Wh) for precision</li>
+              <li>• Offers may be temporarily locked during transactions</li>
+              <li>• Each offer is tied to a specific energy bus</li>
+              <li>• Multiple buyers can purchase portions of your offers</li>
+            </ul>
+          </div>
         </div>
       )}
     </div>

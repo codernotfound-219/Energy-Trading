@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 const MyPurchases = () => {
   const { contract, account } = useWeb3();
   const [purchases, setPurchases] = useState([]);
-  const [energyBalance, setEnergyBalance] = useState('0');
+  const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,18 +16,61 @@ const MyPurchases = () => {
       setLoading(true);
       setError(null);
       
-      // Get user purchase indices
-      const userPurchaseIndices = await contract.getUserPurchases(account);
+      // Get all buses to have bus information
+      const busCount = await contract.getBusCount();
+      const busesData = [];
       
-      // Get purchase details
-      const purchasePromises = userPurchaseIndices.map(index => contract.getPurchase(index));
-      const userPurchases = await Promise.all(purchasePromises);
+      for (let i = 1; i <= busCount; i++) {
+        try {
+          const busDetails = await contract.getBusDetails(i);
+          busesData.push({
+            id: i,
+            name: busDetails[0],
+            owners: busDetails[1],
+            totalCapacity: busDetails[2],
+            availableCapacity: busDetails[3],
+            basePrice: busDetails[4],
+            isActive: busDetails[5]
+          });
+        } catch (err) {
+          console.error(`Error loading bus ${i}:`, err);
+        }
+      }
+      setBuses(busesData);
       
-      setPurchases(userPurchases);
+      // Get all user's purchases across all buses
+      const allPurchases = [];
       
-      // Get user's energy balance
-      const balance = await contract.getUserEnergyBalance(account);
-      setEnergyBalance(balance.toString());
+      for (let i = 1; i <= busCount; i++) {
+        try {
+          const userPurchaseIds = await contract.getUserBusPurchases(i, account);
+          
+          for (let j = 0; j < userPurchaseIds.length; j++) {
+            const purchaseId = userPurchaseIds[j];
+            const purchaseDetails = await contract.getPurchaseDetails(purchaseId);
+            
+            // Find the bus name
+            const bus = busesData.find(b => b.id === i);
+            
+            allPurchases.push({
+              id: purchaseId,
+              busId: purchaseDetails[0],
+              busName: bus ? bus.name : `Bus ${i}`,
+              offerId: purchaseDetails[1],
+              buyer: purchaseDetails[2],
+              seller: purchaseDetails[3],
+              energyAmount: purchaseDetails[4],
+              totalPrice: purchaseDetails[5],
+              timestamp: purchaseDetails[6],
+              completed: purchaseDetails[7]
+            });
+          }
+        } catch (err) {
+          console.error(`Error loading purchases for bus ${i}:`, err);
+        }
+      }
+      
+      setPurchases(allPurchases);
       
     } catch (err) {
       console.error('Error loading purchases:', err);
@@ -79,19 +122,12 @@ const MyPurchases = () => {
         <p className="text-gray-600">Track your energy purchases and current balance</p>
       </div>
 
-      {/* Energy Balance Summary */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="card bg-energy-blue text-white">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Current Energy Balance</h3>
-            <p className="text-3xl font-bold">{energyBalance} kWh</p>
-          </div>
-        </div>
-        
+      {/* Energy Purchase Summary */}
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
         <div className="card bg-energy-green text-white">
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-2">Total Energy Purchased</h3>
-            <p className="text-3xl font-bold">{calculateTotalEnergy()} kWh</p>
+            <p className="text-3xl font-bold">{calculateTotalEnergy()} Wh</p>
           </div>
         </div>
         
@@ -136,21 +172,28 @@ const MyPurchases = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {purchase.energyAmount.toString()} kWh
+                    {purchase.energyAmount.toString()} Wh
                   </h3>
                   <p className="text-sm text-gray-600">
+                    From: {purchase.busName}
+                  </p>
+                  <p className="text-sm text-gray-500">
                     Purchased on {formatDate(purchase.timestamp)}
                   </p>
                 </div>
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                  Completed
+                <span className={`px-2 py-1 rounded text-sm ${
+                  purchase.completed 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {purchase.completed ? 'Completed' : 'Pending'}
                 </span>
               </div>
 
               <div className="grid md:grid-cols-4 gap-4 mb-4">
                 <div>
                   <span className="text-gray-600 block text-sm">Energy Amount</span>
-                  <span className="font-medium">{purchase.energyAmount.toString()} kWh</span>
+                  <span className="font-medium">{purchase.energyAmount.toString()} Wh</span>
                 </div>
                 
                 <div>
@@ -166,18 +209,44 @@ const MyPurchases = () => {
                 </div>
                 
                 <div>
-                  <span className="text-gray-600 block text-sm">Listing ID</span>
-                  <span className="font-mono text-sm">#{purchase.listingId.toString()}</span>
+                  <span className="text-gray-600 block text-sm">Purchase ID</span>
+                  <span className="font-mono text-sm">#{purchase.id.toString()}</span>
                 </div>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded p-3">
-                <p className="text-sm text-green-800">
-                  ✅ Energy successfully transferred to your balance
-                </p>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Bus ID:</span>
+                    <span className="ml-2 font-mono">#{purchase.busId.toString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Offer ID:</span>
+                    <span className="ml-2 font-mono">#{purchase.offerId.toString()}</span>
+                  </div>
+                </div>
               </div>
+
+              {purchase.completed && (
+                <div className="mt-4 bg-green-50 border border-green-200 rounded p-3">
+                  <p className="text-sm text-green-800">
+                    ✅ Energy transfer completed successfully
+                  </p>
+                </div>
+              )}
             </div>
           ))}
+          
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 className="font-medium text-blue-900 mb-2">💡 About Your Energy Purchases</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Energy is measured in Watt-hours (Wh) for precision</li>
+              <li>• Each purchase is tied to a specific energy bus</li>
+              <li>• Purchases may be pending until transfer is confirmed</li>
+              <li>• You can purchase partial amounts from offers</li>
+              <li>• Use batch purchases to buy from multiple offers at once</li>
+            </ul>
+          </div>
         </div>
       )}
     </div>
