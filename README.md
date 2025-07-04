@@ -1,16 +1,32 @@
-# P2P Energy Trading Platform
+# MultiBus P2P Energy Trading Platform
 
-A decentralized peer-to-peer energy trading platform built with React, Vite, and Ethereum smart contracts. This application allows users to buy and sell renewable energy directly with each other using blockchain technology.
+A sophisticated decentralized peer-to-peer energy trading platform built with React, Vite, and advanced Ethereum smart contracts. This application enables users to trade renewable energy across multiple energy buses (grids) with concurrent transaction support and collaborative ownership models.
 
-## Features
+## 🚀 Key Features
 
-- **Smart Contract Integration**: Secure energy trading using Ethereum smart contracts
-- **Modern UI**: Built with React, Vite, and Tailwind CSS
-- **Wallet Integration**: Connect with MetaMask to interact with the blockchain
-- **Energy Marketplace**: Browse and purchase available energy listings
-- **Energy Listing**: List your excess renewable energy for sale
-- **Transaction History**: Track your purchases and sales
-- **Real-time Updates**: Live updates of energy listings and transactions
+### Multi-Bus Architecture
+- **Energy Bus System**: Organize energy trading into separate grids/sources (Solar Farm A, Wind Farm B, etc.)
+- **Multiple Ownership**: Each energy bus can have multiple co-owners
+- **Capacity Management**: Real-time tracking of energy capacity and availability
+- **Bus-Specific Trading**: Trade energy within specific energy networks
+
+### Concurrent Transaction Safety
+- **Lock-Free Purchases**: Handle multiple simultaneous purchases safely
+- **Transaction Nonce System**: Prevent replay attacks and ensure transaction ordering
+- **Unique Transaction Hashing**: Each transaction gets a cryptographic hash for tracking
+- **5-minute Lock Duration**: Temporary locks prevent double-spending during high-frequency trading
+
+### Advanced Trading Features
+- **Partial Purchases**: Buy any amount up to the full offer
+- **Batch Purchases**: Buy from multiple offers in a single transaction
+- **Watt-hour Precision**: Energy measured in Watt-hours (Wh) for precise trading
+- **Real-time Lock Status**: See when offers are temporarily locked by other transactions
+
+### Modern UI/UX
+- **Bus Selection Interface**: Choose which energy bus to browse
+- **Real-time Capacity Display**: See available capacity for each energy bus
+- **Lock Status Indicators**: Visual feedback for offer availability
+- **Collaborative Bus Creation**: Interface for creating multi-owner energy buses
 
 ## Technology Stack
 
@@ -68,25 +84,57 @@ Before running this application, make sure you have:
 7. **Access the application**
    Open your browser and go to `http://localhost:3000`
 
-## Smart Contract
+## Smart Contract Architecture
 
-The `EnergyTrading.sol` contract provides the following functionality:
+The `MultiBusEnergyTrading.sol` contract provides advanced energy trading functionality with concurrent transaction support:
 
-### Main Functions
+### Core Data Structures
 
-- `listEnergy(uint256 _energyAmount, uint256 _pricePerKWh)`: List energy for sale
-- `purchaseEnergy(uint256 _listingId)`: Purchase energy from a listing
-- `cancelListing(uint256 _listingId)`: Cancel an active listing
-- `getActiveListings()`: Get all available energy listings
-- `getUserListings(address _user)`: Get user's listings
-- `getUserPurchases(address _user)`: Get user's purchase history
-- `getUserEnergyBalance(address _user)`: Get user's energy balance
+- **EnergyBus**: Represents energy grids with multiple owners, capacity management, and base pricing
+- **EnergyOffer**: Individual energy offers tied to specific buses with lock expiry for concurrent safety
+- **EnergyPurchase**: Detailed purchase records with transaction hashes for tracking
+- **TransactionLock**: Manages concurrent transaction safety with temporary locks
+
+### Key Functions
+
+#### Bus Management
+- `createEnergyBus(string _name, address[] _owners, uint256 _capacity, uint256 _basePrice)`: Create new energy bus
+- `addBusOwner(uint256 _busId, address _newOwner)`: Add new owner to existing bus
+- `getBusDetails(uint256 _busId)`: Get bus information including capacity and owners
+
+#### Energy Trading
+- `createOffer(uint256 _busId, uint256 _energyAmount, uint256 _pricePerUnit)`: Create energy offer on specific bus
+- `purchaseEnergy(uint256 _offerId, uint256 _energyAmount, uint256 _nonce)`: Purchase energy with concurrent safety
+- `batchPurchaseEnergy(uint256[] _offerIds, uint256[] _energyAmounts, uint256 _nonce)`: Buy from multiple offers
+- `confirmEnergyTransfer(uint256 _purchaseId)`: Confirm physical energy transfer completion
+
+#### Query Functions
+- `getBusActiveOffers(uint256 _busId)`: Get all active offers for a specific bus
+- `getUserBuses(address _user)`: Get all buses owned by a user
+- `getUserBusOffers(uint256 _busId, address _user)`: Get user's offers on specific bus
+- `isTransactionProcessed(bytes32 _txHash)`: Check if transaction was already processed
+
+### Advanced Features
+
+#### Concurrent Transaction Safety
+- **Nonce System**: Each user has an incrementing nonce to prevent replay attacks
+- **Transaction Hashing**: Unique hashes prevent duplicate transaction processing
+- **Temporary Locks**: 5-minute locks during purchase processing prevent double-spending
+- **Lock Expiry Checks**: Automatic lock validation for high-frequency trading
+
+#### Multi-Bus Organization
+- **Bus-Specific Capacity**: Each bus tracks total and available capacity independently
+- **Cross-Bus Trading**: Users can participate in multiple energy buses simultaneously  
+- **Owner Verification**: Multi-signature-like ownership verification for bus operations
 
 ### Events
 
-- `EnergyListed`: Emitted when energy is listed for sale
-- `EnergyPurchased`: Emitted when energy is purchased
-- `ListingCancelled`: Emitted when a listing is cancelled
+- `BusCreated`: Emitted when new energy bus is created
+- `OfferCreated`: Emitted when energy offer is posted
+- `OfferLocked/OfferUnlocked`: Track offer locking during concurrent transactions
+- `EnergyPurchased`: Emitted for each energy purchase with full transaction details
+- `ConcurrentPurchaseProcessed`: Track concurrent transaction processing
+- `PurchaseCompleted`: Emitted when seller confirms energy transfer
 
 ## MetaMask Setup
 
@@ -113,31 +161,60 @@ npm run demo
 ```
 
 The demo will:
-- Deploy the EnergyTrading smart contract
-- Create sample energy listings
-- Simulate energy purchases
-- Show marketplace activity
-- Display transaction results
+- Deploy the MultiBusEnergyTrading smart contract
+- Create sample energy buses with multiple owners
+- Create energy offers on different buses
+- Simulate concurrent energy purchases
+- Demonstrate batch purchase functionality
+- Show multi-bus marketplace activity
+- Display transaction results and gas usage
 
-This proves the smart contract works before testing with the frontend!
+This proves the advanced smart contract features work before testing with the frontend!
 
-## Usage
+## Usage Guide
+
+### Creating Energy Buses
+
+1. **Connect Wallet**: Click "Connect Wallet" and select your MetaMask account
+2. **Navigate to Energy Management**: Go to "List Energy" page which includes bus creation
+3. **Create New Bus**:
+   - Enter bus name (e.g., "Solar Farm Alpha")
+   - Add additional owner addresses (comma-separated, optional)
+   - Set total capacity in Watt-hours (Wh)
+   - Set base price per Wh in ETH
+   - Submit to create the bus
 
 ### For Energy Sellers
 
-1. **Connect Wallet**: Click "Connect Wallet" and select your MetaMask account
-2. **List Energy**: Go to "List Energy" page
-   - Enter the amount of energy (kWh) you want to sell
-   - Set your price per kWh in ETH
-   - Submit the listing
-3. **Manage Listings**: View and cancel your listings in "My Listings"
+1. **Select or Create Bus**: Choose an existing energy bus or create a new one
+2. **Create Energy Offer**:
+   - Select the energy bus from dropdown
+   - Enter energy amount in Watt-hours (Wh)
+   - Set your price per Wh in ETH
+   - Submit the offer
+3. **Monitor Offers**: Track your offers across different buses
+4. **Confirm Transfers**: Confirm when physical energy transfer is completed
 
 ### For Energy Buyers
 
-1. **Connect Wallet**: Click "Connect Wallet" and select your MetaMask account
-2. **Browse Marketplace**: View available energy listings on the home page
-3. **Purchase Energy**: Click "Purchase Energy" on any listing you want to buy
-4. **Track Purchases**: View your purchase history in "My Purchases"
+1. **Browse by Bus**: Select an energy bus to see available offers
+2. **Partial Purchases**: Enter the amount you want to buy (can be less than full offer)
+3. **Single Purchase**: Click "Purchase Energy" for individual offers
+4. **Batch Purchase**: Use "Batch Purchase" to buy from multiple offers simultaneously
+5. **Monitor Status**: See if offers are temporarily locked by other transactions
+6. **Track Purchases**: View your purchase history organized by energy bus
+
+### Advanced Features
+
+#### Concurrent Trading
+- **Lock Awareness**: Interface shows when offers are temporarily locked
+- **Nonce Management**: System automatically manages transaction nonces
+- **Retry Logic**: Built-in handling for concurrent transaction conflicts
+
+#### Multi-Bus Management
+- **Bus Ownership**: Co-own energy buses with other users
+- **Cross-Bus Trading**: Participate in multiple energy networks
+- **Capacity Tracking**: Real-time visibility into bus capacity and availability
 
 ## Development Scripts
 
@@ -164,20 +241,39 @@ This proves the smart contract works before testing with the frontend!
 
 ```
 Energy-Trading/
-├── contracts/              # Smart contracts
-│   └── EnergyTrading.sol   # Main energy trading contract
-├── scripts/                # Deployment scripts
-│   └── deploy.js          # Contract deployment script
-├── src/                   # React frontend
-│   ├── components/        # React components
-│   ├── context/          # React context providers
-│   ├── pages/            # Page components
-│   ├── App.jsx           # Main app component
-│   ├── main.jsx          # App entry point
-│   └── index.css         # Global styles
-├── hardhat.config.js     # Hardhat configuration
-├── package.json          # Dependencies and scripts
-└── vite.config.js        # Vite configuration
+├── contracts/                    # Smart contracts
+│   └── EnergyTrading.sol        # MultiBusEnergyTrading contract
+├── scripts/                     # Deployment and utility scripts
+│   ├── deploy.js               # Contract deployment script
+│   └── demo.js                 # Contract demonstration script
+├── test/                       # Smart contract tests
+│   └── EnergyTrading.test.js   # Comprehensive test suite
+├── src/                        # React frontend
+│   ├── components/             # React components
+│   │   ├── EnergyCard.jsx     # Energy offer display with concurrent features
+│   │   ├── ErrorBoundary.jsx  # Error handling component
+│   │   └── Navbar.jsx         # Navigation component
+│   ├── context/               # React context providers
+│   │   └── Web3Context.jsx    # Web3 and contract integration
+│   ├── pages/                 # Page components
+│   │   ├── Home.jsx           # Multi-bus marketplace browser
+│   │   ├── ListEnergy.jsx     # Bus creation and offer management
+│   │   ├── MyListings.jsx     # User's offers across buses
+│   │   └── MyPurchases.jsx    # User's purchase history
+│   ├── utils/                 # Utility functions
+│   │   └── csp-handler.js     # Content Security Policy handling
+│   ├── App.jsx                # Main app component with routing
+│   ├── main.jsx               # App entry point
+│   └── index.css              # Global styles with Tailwind
+├── artifacts/                  # Compiled contract artifacts
+├── cache/                      # Hardhat compilation cache
+├── public/                     # Static assets
+│   ├── contract.json          # Deployed contract ABI and address
+│   └── favicon.svg            # App icon
+├── hardhat.config.js          # Hardhat configuration
+├── package.json               # Dependencies and scripts
+├── vite.config.js             # Vite bundler configuration
+└── tailwind.config.js         # Tailwind CSS configuration
 ```
 
 ## Contributing

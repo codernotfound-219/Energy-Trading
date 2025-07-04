@@ -1,24 +1,24 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  console.log("Deploying EnergyTrading contract...");
+  console.log("Deploying MultiBusEnergyTrading contract...");
 
   // Get the ContractFactory and Signers here.
-  const EnergyTrading = await ethers.getContractFactory("EnergyTrading");
+  const MultiBusEnergyTrading = await ethers.getContractFactory("MultiBusEnergyTrading");
   
   // Deploy the contract
-  const energyTrading = await EnergyTrading.deploy();
+  const multiBusEnergyTrading = await MultiBusEnergyTrading.deploy();
   
-  await energyTrading.waitForDeployment();
+  await multiBusEnergyTrading.waitForDeployment();
   
-  const contractAddress = await energyTrading.getAddress();
-  console.log("EnergyTrading contract deployed to:", contractAddress);
+  const contractAddress = await multiBusEnergyTrading.getAddress();
+  console.log("MultiBusEnergyTrading contract deployed to:", contractAddress);
 
   // Save the contract address and ABI to the frontend
   const fs = require('fs');
   const contractData = {
     address: contractAddress,
-    abi: energyTrading.interface.fragments.map(fragment => fragment.format('json')).map(f => JSON.parse(f))
+    abi: multiBusEnergyTrading.interface.fragments.map(fragment => fragment.format('json')).map(f => JSON.parse(f))
   };
 
   // Create src directory if it doesn't exist

@@ -4,31 +4,81 @@
     {
       "type": "event",
       "anonymous": false,
-      "name": "EnergyListed",
+      "name": "BusCapacityUpdated",
       "inputs": [
         {
           "type": "uint256",
-          "name": "listingId",
+          "name": "busId",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "newCapacity",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "BusCreated",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "busId",
+          "indexed": true
+        },
+        {
+          "type": "string",
+          "name": "name",
+          "indexed": false
+        },
+        {
+          "type": "address[]",
+          "name": "owners"
+        },
+        {
+          "type": "uint256",
+          "name": "capacity",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "BusOwnerAdded",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "busId",
           "indexed": true
         },
         {
           "type": "address",
-          "name": "seller",
+          "name": "newOwner",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "ConcurrentPurchaseProcessed",
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "txHash",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "buyer",
           "indexed": true
         },
         {
           "type": "uint256",
-          "name": "energyAmount",
-          "indexed": false
-        },
-        {
-          "type": "uint256",
-          "name": "pricePerKWh",
-          "indexed": false
-        },
-        {
-          "type": "uint256",
-          "name": "totalPrice",
+          "name": "offerId",
           "indexed": false
         }
       ]
@@ -40,7 +90,12 @@
       "inputs": [
         {
           "type": "uint256",
-          "name": "listingId",
+          "name": "purchaseId",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "busId",
           "indexed": true
         },
         {
@@ -51,7 +106,7 @@
         {
           "type": "address",
           "name": "seller",
-          "indexed": true
+          "indexed": false
         },
         {
           "type": "uint256",
@@ -68,188 +123,140 @@
     {
       "type": "event",
       "anonymous": false,
-      "name": "ListingCancelled",
+      "name": "OfferCreated",
       "inputs": [
         {
           "type": "uint256",
-          "name": "listingId",
+          "name": "offerId",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "busId",
           "indexed": true
         },
         {
           "type": "address",
           "name": "seller",
           "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "energyAmount",
+          "indexed": false
+        },
+        {
+          "type": "uint256",
+          "name": "pricePerUnit",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "OfferLocked",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "offerId",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "buyer",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "amount",
+          "indexed": false
+        },
+        {
+          "type": "uint256",
+          "name": "lockId",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "OfferUnlocked",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "offerId",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "lockId",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "PurchaseCompleted",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "purchaseId",
+          "indexed": true
         }
       ]
     },
     {
       "type": "function",
-      "name": "cancelListing",
+      "name": "LOCK_DURATION",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "addBusOwner",
       "constant": false,
       "payable": false,
       "inputs": [
         {
           "type": "uint256",
-          "name": "_listingId"
+          "name": "_busId"
+        },
+        {
+          "type": "address",
+          "name": "_newOwner"
         }
       ],
       "outputs": []
     },
     {
       "type": "function",
-      "name": "energyBalance",
-      "constant": true,
-      "stateMutability": "view",
-      "payable": false,
+      "name": "batchPurchaseEnergy",
+      "constant": false,
+      "stateMutability": "payable",
+      "payable": true,
       "inputs": [
         {
-          "type": "address",
-          "name": ""
-        }
-      ],
-      "outputs": [
+          "type": "uint256[]",
+          "name": "_offerIds"
+        },
+        {
+          "type": "uint256[]",
+          "name": "_energyAmounts"
+        },
         {
           "type": "uint256",
-          "name": ""
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "getActiveListings",
-      "constant": true,
-      "stateMutability": "view",
-      "payable": false,
-      "inputs": [],
-      "outputs": [
-        {
-          "type": "tuple[]",
-          "name": "",
-          "components": [
-            {
-              "type": "uint256",
-              "name": "id"
-            },
-            {
-              "type": "address",
-              "name": "seller"
-            },
-            {
-              "type": "uint256",
-              "name": "energyAmount"
-            },
-            {
-              "type": "uint256",
-              "name": "pricePerKWh"
-            },
-            {
-              "type": "uint256",
-              "name": "totalPrice"
-            },
-            {
-              "type": "bool",
-              "name": "isActive"
-            },
-            {
-              "type": "bool",
-              "name": "isSold"
-            },
-            {
-              "type": "uint256",
-              "name": "timestamp"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "getPurchase",
-      "constant": true,
-      "stateMutability": "view",
-      "payable": false,
-      "inputs": [
-        {
-          "type": "uint256",
-          "name": "_purchaseIndex"
-        }
-      ],
-      "outputs": [
-        {
-          "type": "tuple",
-          "name": "",
-          "components": [
-            {
-              "type": "uint256",
-              "name": "listingId"
-            },
-            {
-              "type": "address",
-              "name": "buyer"
-            },
-            {
-              "type": "address",
-              "name": "seller"
-            },
-            {
-              "type": "uint256",
-              "name": "energyAmount"
-            },
-            {
-              "type": "uint256",
-              "name": "totalPrice"
-            },
-            {
-              "type": "uint256",
-              "name": "timestamp"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "getTotalPurchases",
-      "constant": true,
-      "stateMutability": "view",
-      "payable": false,
-      "inputs": [],
-      "outputs": [
-        {
-          "type": "uint256",
-          "name": ""
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "getUserEnergyBalance",
-      "constant": true,
-      "stateMutability": "view",
-      "payable": false,
-      "inputs": [
-        {
-          "type": "address",
-          "name": "_user"
-        }
-      ],
-      "outputs": [
-        {
-          "type": "uint256",
-          "name": ""
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "getUserListings",
-      "constant": true,
-      "stateMutability": "view",
-      "payable": false,
-      "inputs": [
-        {
-          "type": "address",
-          "name": "_user"
+          "name": "_nonce"
         }
       ],
       "outputs": [
@@ -261,43 +268,153 @@
     },
     {
       "type": "function",
-      "name": "getUserPurchases",
+      "name": "busActiveOffers",
       "constant": true,
       "stateMutability": "view",
       "payable": false,
       "inputs": [
         {
-          "type": "address",
-          "name": "_user"
+          "type": "uint256",
+          "name": ""
+        },
+        {
+          "type": "uint256",
+          "name": ""
         }
       ],
       "outputs": [
         {
-          "type": "uint256[]",
+          "type": "uint256",
           "name": ""
         }
       ]
     },
     {
       "type": "function",
-      "name": "listEnergy",
+      "name": "busUserOffers",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        },
+        {
+          "type": "address",
+          "name": ""
+        },
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "busUserPurchases",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        },
+        {
+          "type": "address",
+          "name": ""
+        },
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "confirmEnergyTransfer",
       "constant": false,
       "payable": false,
       "inputs": [
+        {
+          "type": "uint256",
+          "name": "_purchaseId"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "createEnergyBus",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "string",
+          "name": "_name"
+        },
+        {
+          "type": "address[]",
+          "name": "_owners"
+        },
+        {
+          "type": "uint256",
+          "name": "_capacity"
+        },
+        {
+          "type": "uint256",
+          "name": "_basePrice"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "createOffer",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_busId"
+        },
         {
           "type": "uint256",
           "name": "_energyAmount"
         },
         {
           "type": "uint256",
-          "name": "_pricePerKWh"
+          "name": "_pricePerUnit"
         }
       ],
-      "outputs": []
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
     },
     {
       "type": "function",
-      "name": "listings",
+      "name": "energyBuses",
       "constant": true,
       "stateMutability": "view",
       "payable": false,
@@ -313,6 +430,53 @@
           "name": "id"
         },
         {
+          "type": "string",
+          "name": "name"
+        },
+        {
+          "type": "uint256",
+          "name": "totalCapacity"
+        },
+        {
+          "type": "uint256",
+          "name": "availableCapacity"
+        },
+        {
+          "type": "uint256",
+          "name": "basePrice"
+        },
+        {
+          "type": "bool",
+          "name": "isActive"
+        },
+        {
+          "type": "uint256",
+          "name": "ownerCount"
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "energyOffers",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": "id"
+        },
+        {
+          "type": "uint256",
+          "name": "busId"
+        },
+        {
           "type": "address",
           "name": "seller"
         },
@@ -322,57 +486,25 @@
         },
         {
           "type": "uint256",
-          "name": "pricePerKWh"
-        },
-        {
-          "type": "uint256",
-          "name": "totalPrice"
+          "name": "pricePerUnit"
         },
         {
           "type": "bool",
           "name": "isActive"
         },
         {
-          "type": "bool",
-          "name": "isSold"
+          "type": "uint256",
+          "name": "timestamp"
         },
         {
           "type": "uint256",
-          "name": "timestamp"
+          "name": "lockExpiry"
         }
       ]
     },
     {
       "type": "function",
-      "name": "nextListingId",
-      "constant": true,
-      "stateMutability": "view",
-      "payable": false,
-      "inputs": [],
-      "outputs": [
-        {
-          "type": "uint256",
-          "name": ""
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "purchaseEnergy",
-      "constant": false,
-      "stateMutability": "payable",
-      "payable": true,
-      "inputs": [
-        {
-          "type": "uint256",
-          "name": "_listingId"
-        }
-      ],
-      "outputs": []
-    },
-    {
-      "type": "function",
-      "name": "purchases",
+      "name": "energyPurchases",
       "constant": true,
       "stateMutability": "view",
       "payable": false,
@@ -385,7 +517,15 @@
       "outputs": [
         {
           "type": "uint256",
-          "name": "listingId"
+          "name": "id"
+        },
+        {
+          "type": "uint256",
+          "name": "busId"
+        },
+        {
+          "type": "uint256",
+          "name": "offerId"
         },
         {
           "type": "address",
@@ -406,12 +546,39 @@
         {
           "type": "uint256",
           "name": "timestamp"
+        },
+        {
+          "type": "bool",
+          "name": "completed"
+        },
+        {
+          "type": "bytes32",
+          "name": "transactionHash"
         }
       ]
     },
     {
       "type": "function",
-      "name": "totalListings",
+      "name": "getBusActiveOffers",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_busId"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256[]",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "getBusCount",
       "constant": true,
       "stateMutability": "view",
       "payable": false,
@@ -425,7 +592,320 @@
     },
     {
       "type": "function",
-      "name": "userListings",
+      "name": "getBusDetails",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_busId"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "string",
+          "name": "name"
+        },
+        {
+          "type": "address[]",
+          "name": "owners"
+        },
+        {
+          "type": "uint256",
+          "name": "totalCapacity"
+        },
+        {
+          "type": "uint256",
+          "name": "availableCapacity"
+        },
+        {
+          "type": "uint256",
+          "name": "basePrice"
+        },
+        {
+          "type": "bool",
+          "name": "isActive"
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "getOfferDetails",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_offerId"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": "busId"
+        },
+        {
+          "type": "address",
+          "name": "seller"
+        },
+        {
+          "type": "uint256",
+          "name": "energyAmount"
+        },
+        {
+          "type": "uint256",
+          "name": "pricePerUnit"
+        },
+        {
+          "type": "bool",
+          "name": "isActive"
+        },
+        {
+          "type": "uint256",
+          "name": "lockExpiry"
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "getPurchaseDetails",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_purchaseId"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": "busId"
+        },
+        {
+          "type": "uint256",
+          "name": "offerId"
+        },
+        {
+          "type": "address",
+          "name": "buyer"
+        },
+        {
+          "type": "address",
+          "name": "seller"
+        },
+        {
+          "type": "uint256",
+          "name": "energyAmount"
+        },
+        {
+          "type": "uint256",
+          "name": "totalPrice"
+        },
+        {
+          "type": "uint256",
+          "name": "timestamp"
+        },
+        {
+          "type": "bool",
+          "name": "completed"
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "getUserBusOffers",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_busId"
+        },
+        {
+          "type": "address",
+          "name": "_user"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256[]",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "getUserBusPurchases",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_busId"
+        },
+        {
+          "type": "address",
+          "name": "_user"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256[]",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "getUserBuses",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "address",
+          "name": "_user"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256[]",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "isTransactionProcessed",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "_txHash"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "offerIndexInBus",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        },
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "processedTransactions",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "purchaseEnergy",
+      "constant": false,
+      "stateMutability": "payable",
+      "payable": true,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "_offerId"
+        },
+        {
+          "type": "uint256",
+          "name": "_energyAmount"
+        },
+        {
+          "type": "uint256",
+          "name": "_nonce"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "transactionLocks",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": "offerId"
+        },
+        {
+          "type": "address",
+          "name": "buyer"
+        },
+        {
+          "type": "uint256",
+          "name": "amount"
+        },
+        {
+          "type": "uint256",
+          "name": "lockTime"
+        },
+        {
+          "type": "bool",
+          "name": "isActive"
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "userBuses",
       "constant": true,
       "stateMutability": "view",
       "payable": false,
@@ -448,17 +928,13 @@
     },
     {
       "type": "function",
-      "name": "userPurchases",
+      "name": "userNonce",
       "constant": true,
       "stateMutability": "view",
       "payable": false,
       "inputs": [
         {
           "type": "address",
-          "name": ""
-        },
-        {
-          "type": "uint256",
           "name": ""
         }
       ],
