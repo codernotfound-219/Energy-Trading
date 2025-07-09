@@ -60,7 +60,7 @@ Before running this application, make sure you have:
    ```bash
    npx hardhat node --port 8546
    ```
-   This will start a local Hardhat network on `http://localhost:8546`
+   This will start a local Hardhat network on `http://localhost:8545`
    
    ⚠️ **Important**: Keep this terminal running - the blockchain node must stay active for the application to work.
 
@@ -140,8 +140,8 @@ The `MultiBusEnergyTrading.sol` contract provides advanced energy trading functi
 
 1. **Install MetaMask**: Download and install the MetaMask browser extension
 2. **Connect to Local Network**:
-   - Network Name: Localhost 8546
-   - RPC URL: http://localhost:8546
+   - Network Name: Localhost 8545
+   - RPC URL: http://localhost:8545
    - Chain ID: 1337
    - Currency Symbol: ETH
 
@@ -153,7 +153,7 @@ After installation, you can run a demonstration of the smart contract functional
 
 ```bash
 # Terminal 1: Start blockchain
-npx hardhat node --port 8546
+npx hardhat node --port 8545
 
 # Terminal 2: Deploy and run demo
 npm run deploy
@@ -336,7 +336,7 @@ pkill -f hardhat
 rm -rf artifacts cache src/contract.json
 
 # Restart blockchain
-npx hardhat node --port 8546
+npx hardhat node --port 8545
 
 # Redeploy (in new terminal)
 npm run deploy
