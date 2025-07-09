@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
+import CreateBus from './pages/CreateBus';
 import ListEnergy from './pages/ListEnergy';
 import MyListings from './pages/MyListings';
 import MyPurchases from './pages/MyPurchases';
@@ -33,6 +34,7 @@ function App() {
             <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/create-bus" element={<CreateBus />} />
                 <Route path="/list-energy" element={<ListEnergy />} />
                 <Route path="/my-listings" element={<MyListings />} />
                 <Route path="/my-purchases" element={<MyPurchases />} />

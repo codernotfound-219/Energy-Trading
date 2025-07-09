@@ -1,13 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 
 const Navbar = () => {
   const { account, connectWallet, disconnectWallet, loading } = useWeb3();
+  const location = useLocation();
 
   const formatAddress = (address) => {
     if (!address) return '';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  const getLinkClass = (path) => {
+    const baseClass = "px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200";
+    if (isActive(path)) {
+      return `${baseClass} bg-energy-blue text-white`;
+    }
+    return `${baseClass} text-gray-700 hover:text-energy-blue hover:bg-gray-100`;
   };
 
   return (
@@ -20,28 +33,34 @@ const Navbar = () => {
             </Link>
             
             {account && (
-              <div className="hidden md:flex space-x-6">
+              <div className="hidden md:flex space-x-2">
                 <Link
                   to="/"
-                  className="text-gray-700 hover:text-energy-blue transition-colors duration-200"
+                  className={getLinkClass('/')}
                 >
                   Marketplace
                 </Link>
                 <Link
+                  to="/create-bus"
+                  className={getLinkClass('/create-bus')}
+                >
+                  Create Bus
+                </Link>
+                <Link
                   to="/list-energy"
-                  className="text-gray-700 hover:text-energy-blue transition-colors duration-200"
+                  className={getLinkClass('/list-energy')}
                 >
                   List Energy
                 </Link>
                 <Link
                   to="/my-listings"
-                  className="text-gray-700 hover:text-energy-blue transition-colors duration-200"
+                  className={getLinkClass('/my-listings')}
                 >
                   My Listings
                 </Link>
                 <Link
                   to="/my-purchases"
-                  className="text-gray-700 hover:text-energy-blue transition-colors duration-200"
+                  className={getLinkClass('/my-purchases')}
                 >
                   My Purchases
                 </Link>
