@@ -23,7 +23,9 @@ A sophisticated decentralized peer-to-peer energy trading platform built with Re
 - **Real-time Lock Status**: See when offers are temporarily locked by other transactions
 
 ### Modern UI/UX
-- **Bus Selection Interface**: Choose which energy bus to browse
+- **Separated Bus Creation**: Dedicated page for creating energy buses with debug tools
+- **Enhanced Navigation**: Active page indicators and organized menu structure
+- **Comprehensive Portfolio**: Analytics dashboard showing trading performance and net position
 - **Real-time Capacity Display**: See available capacity for each energy bus
 - **Lock Status Indicators**: Visual feedback for offer availability
 - **Collaborative Bus Creation**: Interface for creating multi-owner energy buses
@@ -186,23 +188,30 @@ This proves the advanced smart contract features work before testing with the fr
 
 ### For Energy Sellers
 
-1. **Select or Create Bus**: Choose an existing energy bus or create a new one
-2. **Create Energy Offer**:
+1. **Create Energy Bus**: Navigate to "Create Bus" page to set up new energy infrastructure
+2. **Bus Configuration**:
+   - Enter bus name (e.g., "Solar Farm Alpha")
+   - Add additional owner addresses (comma-separated, optional)
+   - Set total capacity in Watt-hours (Wh)
+   - Set base price per Wh in ETH
+3. **Create Energy Offers**:
+   - Go to "List Energy" page
    - Select the energy bus from dropdown
    - Enter energy amount in Watt-hours (Wh)
    - Set your price per Wh in ETH
    - Submit the offer
-3. **Monitor Offers**: Track your offers across different buses
-4. **Confirm Transfers**: Confirm when physical energy transfer is completed
+4. **Monitor Performance**: Use "Portfolio" page to track all listings and earnings
+5. **Confirm Transfers**: Confirm when physical energy transfer is completed
 
 ### For Energy Buyers
 
-1. **Browse by Bus**: Select an energy bus to see available offers
-2. **Partial Purchases**: Enter the amount you want to buy (can be less than full offer)
-3. **Single Purchase**: Click "Purchase Energy" for individual offers
-4. **Batch Purchase**: Use "Batch Purchase" to buy from multiple offers simultaneously
-5. **Monitor Status**: See if offers are temporarily locked by other transactions
-6. **Track Purchases**: View your purchase history organized by energy bus
+1. **Browse Marketplace**: Start at "Home" page to see all available buses and offers
+2. **Select Energy Bus**: Choose an energy bus to see available offers
+3. **Partial Purchases**: Enter the amount you want to buy (can be less than full offer)
+4. **Single Purchase**: Click "Purchase Energy" for individual offers
+5. **Batch Purchase**: Use "Batch Purchase" to buy from multiple offers simultaneously
+6. **Monitor Status**: See if offers are temporarily locked by other transactions
+7. **Track Performance**: Use "Portfolio" page to monitor all purchases and spending
 
 ### Advanced Features
 
@@ -252,14 +261,15 @@ Energy-Trading/
 │   ├── components/             # React components
 │   │   ├── EnergyCard.jsx     # Energy offer display with concurrent features
 │   │   ├── ErrorBoundary.jsx  # Error handling component
-│   │   └── Navbar.jsx         # Navigation component
+│   │   └── Navbar.jsx         # Navigation with active page indicators
 │   ├── context/               # React context providers
 │   │   └── Web3Context.jsx    # Web3 and contract integration
 │   ├── pages/                 # Page components
 │   │   ├── Home.jsx           # Multi-bus marketplace browser
-│   │   ├── ListEnergy.jsx     # Bus creation and offer management
+│   │   ├── CreateBus.jsx      # Dedicated bus creation with debug tools
+│   │   ├── ListEnergy.jsx     # Energy offer creation (simplified)
 │   │   ├── MyListings.jsx     # User's offers across buses
-│   │   └── MyPurchases.jsx    # User's purchase history
+│   │   └── Portfolio.jsx      # Comprehensive trading analytics and history
 │   ├── utils/                 # Utility functions
 │   │   └── csp-handler.js     # Content Security Policy handling
 │   ├── App.jsx                # Main app component with routing
