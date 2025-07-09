@@ -58,7 +58,7 @@ Before running this application, make sure you have:
 
 3. **Start local blockchain**
    ```bash
-   npx hardhat node --port 8546
+   npx hardhat node --port 8545
    ```
    This will start a local Hardhat network on `http://localhost:8545`
    
@@ -225,15 +225,15 @@ This proves the advanced smart contract features work before testing with the fr
 - `npm run test`: Run smart contract tests
 - `npm run deploy`: Deploy contracts to local network
 - `npm run demo`: Run smart contract demonstration
-- `npx hardhat node --port 8546`: Start local Hardhat network
+- `npx hardhat node --port 8545`: Start local Hardhat network
 
 ### Typical Development Workflow
 
-1. **Start blockchain**: `npx hardhat node --port 8546` (keep running)
+1. **Start blockchain**: `npx hardhat node --port 8545` (keep running)
 2. **Deploy contracts**: `npm run deploy`
 3. **Test contracts**: `npm run demo` (optional)
 4. **Start frontend**: `npm run dev`
-5. **Connect MetaMask** to localhost:8546
+5. **Connect MetaMask** to localhost:8545
 6. **Import test accounts** from Hardhat output
 7. **Start trading energy!**
 
@@ -290,13 +290,13 @@ Energy-Trading/
 
 1. **MetaMask Connection Issues**
    - Make sure MetaMask is installed and unlocked
-   - Check that you're connected to the correct network (localhost:8546)
+   - Check that you're connected to the correct network (localhost:8545)
    - Refresh the page and try reconnecting
 
 2. **Contract Not Found**
    - Ensure the smart contract is deployed (`npm run deploy`)
    - Check that the contract address in `src/contract.json` is correct
-   - Verify the blockchain node is running on port 8546
+   - Verify the blockchain node is running on port 8545
 
 3. **Transaction Failures**
    - Make sure you have sufficient ETH for gas fees
@@ -308,7 +308,7 @@ Energy-Trading/
    - Make sure you have the correct Node.js version
 
 5. **Demo Script Issues**
-   - Ensure blockchain node is running: `npx hardhat node --port 8546`
+   - Ensure blockchain node is running: `npx hardhat node --port 8545`
    - Redeploy contract if blockchain restarted: `npm run deploy`
    - Check terminal output for error messages
 
