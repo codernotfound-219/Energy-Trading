@@ -59,10 +59,10 @@ const Navbar = () => {
                   My Listings
                 </Link>
                 <Link
-                  to="/my-purchases"
-                  className={getLinkClass('/my-purchases')}
+                  to="/portfolio"
+                  className={getLinkClass('/portfolio')}
                 >
-                  My Purchases
+                  Portfolio
                 </Link>
               </div>
             )}

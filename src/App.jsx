@@ -6,7 +6,7 @@ import Home from './pages/Home';
 import CreateBus from './pages/CreateBus';
 import ListEnergy from './pages/ListEnergy';
 import MyListings from './pages/MyListings';
-import MyPurchases from './pages/MyPurchases';
+import Portfolio from './pages/Portfolio';
 import { useWeb3 } from './context/Web3Context';
 
 function App() {
@@ -37,7 +37,7 @@ function App() {
                 <Route path="/create-bus" element={<CreateBus />} />
                 <Route path="/list-energy" element={<ListEnergy />} />
                 <Route path="/my-listings" element={<MyListings />} />
-                <Route path="/my-purchases" element={<MyPurchases />} />
+                <Route path="/portfolio" element={<Portfolio />} />
               </Routes>
             </ErrorBoundary>
           </main>
